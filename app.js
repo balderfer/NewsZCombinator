@@ -5,6 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var everyauth = require('everyauth');
 var http = require('http');
 var fs = require('fs');
 
@@ -35,6 +36,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(everyauth.middleware(app));
 
 
 app.use('/', routes);
