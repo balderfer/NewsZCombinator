@@ -5,8 +5,12 @@ var express = require('express'),
     TwitterStrategy = require('passport-twitter'),
     GoolgeStrategy = require('passport-google'),
     FacebookStrategy = require('passport-facebook'),
+    bodyParser = require('body-parser'),
     path = require('path'),
-    methodOverride = require('method-override');
+    methodOverride = require('method-override'),
+    formidable = require('formidable'),
+    http = require('http'),
+    util = require('util');
     
 
 var config = require('./config.js'), //config file contains all tokens and other private info
@@ -87,8 +91,9 @@ function ensureAuthenticated(req, res, next) {
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.logger());
 app.use(express.cookieParser());
-app.use(express.bodyParser());
-app.use(express.methodOverride());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
+// app.use(express.formidable());
 app.use(express.session({ secret: 'supernova' }));
 app.use(passport.initialize());
 app.use(passport.session());
