@@ -1,0 +1,74 @@
+<center>
+    <table border="0" cellpadding="0" cellspacing="0" width="85%" bgcolor="#f6f6ef">
+        <tr>
+            <td bgcolor="#ff6600">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding: 2px;">
+                    <tr>
+                        <td style="width: 18px; padding-right: 4px;">
+                            <a href="http://zcombinator.me">
+                                <img src="images/z196.png" width="18" height="18" style="border: 1px #ffffff solid;">
+                            </a>
+                        </td>
+                        <td style="line-height: 12pt; height: 10px;">
+                            <span class="pagetop">
+                                <b>
+                                    <a href="news">AA News</a>
+                                </b>
+                                <img src="s.gif" height="1" width="10">
+                                <a href="newest">new</a>
+                                |
+                                <a href="submit">submit</a>
+                            </span>
+                        </td>
+                        <td style="text-align: right; padding-right: 4px;">
+                            <span class="pagetop">
+                              {{#if user}}
+                                <a href="user?id=balderfer">
+                                    <font color="#3c963c">{{user.username}}</font>
+                                </a>
+                                (1) |
+                                <a href="/logout">logout</a>
+                              {{else}}
+                                <a href="/signin">login</a>
+                              {{/if}}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr style="height: 10px;"></tr>
+        <tr>
+            <td>
+                <table border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td align="right" valign="top" class="title">1.</td>
+                        <td>
+                            <center>
+                                <a id="up_8363486" onclick="return vote(this)" href="vote?for=8363486&amp;dir=up&amp;by=balderfer&amp;auth=35eeb04d480714f83706d1e172718714c92264fe&amp;whence=%6e%65%77%73">
+                                    <div title="upvote" class="votearrow"></div>
+                                </a>
+                                <span id="down_8363486"></span>
+                            </center>
+                        </td>
+                        <td class="title">
+                            <a href="https://github.com/vgvassilev/cling/">Jagermeister FTW </a>
+                            <span class="comhead">(aa.com)</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"></td>
+                        <td class="subtext">
+                            <span id="score_8363486">69 points </span>
+                            by 
+                            <a href="user?id=ColinWright">balderfer </a>
+                            2 hours ago  |
+                            <a href="item?id=8363486"> 6 comments</a>
+                        </td>
+                    </tr>
+                    <tr style="height: 5px;"></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</center>
