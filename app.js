@@ -24,11 +24,11 @@ var Post = require('./routes/Post');
 var users = require('./routes/users');
 
 db_url = process.env.MONGOHQ_URL;
-var db = mongoose.connect(db_url);
+mongoose.connect(db_url);
 
 // mongoose.connect('localhost', 'aanews');
 
-// var db = mongoose.connection;
+var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function callback() {
     console.log('Connected to database');
