@@ -92,7 +92,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.logger());
 app.use(express.cookieParser());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
+app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(express.formidable());
 app.use(express.session({ secret: 'supernova' }));
 app.use(passport.initialize());
