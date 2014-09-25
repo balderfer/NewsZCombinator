@@ -5,7 +5,8 @@ var express = require('express'),
     TwitterStrategy = require('passport-twitter'),
     GoolgeStrategy = require('passport-google'),
     FacebookStrategy = require('passport-facebook'),
-    path = require('path');
+    path = require('path'),
+    methodOverride = require('method-override');
     
 
 var config = require('./config.js'), //config file contains all tokens and other private info
@@ -87,6 +88,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.logger());
 app.use(express.cookieParser());
 app.use(express.bodyParser());
+app.use(express.methodOverride());
 app.use(express.session({ secret: 'supernova' }));
 app.use(passport.initialize());
 app.use(passport.session());
