@@ -14,10 +14,12 @@
                                 <b>
                                     <a href="news">AA News</a>
                                 </b>
-                                <img src="s.gif" height="1" width="10">
-                                <a href="newest">new</a>
-                                |
+                                <img src="" height="1" width="10">
+                                {{!-- <a href="newest">new</a>
+                                | --}}
                                 <a href="submit">submit</a>
+{{!--                                 |
+                                <a onclick="upmykarma('{{user.id}}')">upkarma</a> --}}
                             </span>
                         </td>
                         <td style="text-align: right; padding-right: 4px;">
@@ -26,7 +28,7 @@
                                 <a href="user?id=balderfer">
                                     <font color="#3c963c">{{user.username}}</font>
                                 </a>
-                                (1) |
+                                ({{info.karma}}) |
                                 <a href="/logout">logout</a>
                               {{else}}
                                 <a href="/signin">login</a>
@@ -41,32 +43,38 @@
         <tr>
             <td>
                 <table border="0" cellpadding="0" cellspacing="0">
+                  {{#each posts}}
                     <tr>
                         <td align="right" valign="top" class="title">1.</td>
                         <td>
                             <center>
-                                <a id="up_8363486" onclick="return vote(this)" href="vote?for=8363486&amp;dir=up&amp;by=balderfer&amp;auth=35eeb04d480714f83706d1e172718714c92264fe&amp;whence=%6e%65%77%73">
+                                <a id="up_8363486" onclick="uppost('{{_id}}', '{{../user.id}}')">
                                     <div title="upvote" class="votearrow"></div>
                                 </a>
                                 <span id="down_8363486"></span>
                             </center>
                         </td>
                         <td class="title">
-                            <a href="https://github.com/vgvassilev/cling/">Jagermeister FTW </a>
-                            <span class="comhead">(aa.com)</span>
+                            {{#if url}}
+                            <a href="http://{{url}}">{{title}} </a>
+                            <span class="comhead">({{url}})</span>
+                            {{else}}
+                            <a href="#">{{title}} </a>
+                            {{/if}}
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2"></td>
                         <td class="subtext">
-                            <span id="score_8363486">69 points </span>
+                            <span id="score_8363486">{{points}} points </span>
                             by 
-                            <a href="user?id=ColinWright">balderfer </a>
-                            2 hours ago  |
-                            <a href="item?id=8363486"> 6 comments</a>
+                            <a>{{author}} </a>
+                            <span class="formatdate">{{date}}</span>{{!--   |
+                            <a> 6 comments</a> --}}
                         </td>
                     </tr>
                     <tr style="height: 5px;"></tr>
+                  {{~/each}}
                 </table>
             </td>
         </tr>

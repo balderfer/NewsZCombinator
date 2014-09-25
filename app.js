@@ -10,11 +10,29 @@ var express = require('express'),
     methodOverride = require('method-override'),
     formidable = require('formidable'),
     http = require('http'),
-    util = require('util');
+    util = require('util'),
+    mongoose = require('mongoose'),
+    fs = require('fs'),
+    http = require('http');
     
 
 var config = require('./config.js'), //config file contains all tokens and other private info
     funct = require('./functions.js');
+
+var User = require('./routes/User');
+var Post = require('./routes/Post');
+var users = require('./routes/users');
+
+// db_url = process.env.MONGOHQ_URL;
+// mongoose.connect(db_url);
+
+mongoose.connect('localhost', 'aanews');
+
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function callback() {
+    console.log('Connected to database');
+});
 
 var app = express();
 
@@ -58,7 +76,19 @@ passport.use('local-signin', new LocalStrategy(
 passport.use('local-signup', new LocalStrategy(
   {passReqToCallback : true}, //allows us to pass back the request to the callback
   function(req, username, password, done) {
-    funct.localReg(username, password)
+
+    var newUser = new User({
+      username: username,
+      karma: 0
+    });
+
+    newUser.save(function(err) {
+
+    });
+
+    console.log(newUser);
+
+    funct.localReg(username, password, newUser._id)
     .then(function (user) {
       if (user) {
         console.log("REGISTERED: " + user.username);
@@ -126,9 +156,35 @@ app.set('view engine', 'handlebars');
 
 
 //===============ROUTES=================
+
+// app.use('/users/', users);
+
 //displays our homepage
 app.get('/', function(req, res){
-  res.render('home', {user: req.user});
+
+  var postsarray = [];
+
+  Post.find({}, function(err, posts) {
+    posts.forEach(function(post) {
+      postsarray.push(post);
+    });
+  });
+
+  if (req.user) {
+    console.log(req.user.id);
+    User.find({}, function(err, persons) {
+        persons.forEach(function(person) {
+          if (req.user.id == person._id) {
+            console.log(person.username);
+            res.render('home', {user: req.user, info: person, posts: postsarray});
+          }
+        });
+    });
+  }
+  else {
+    console.log("no user :(");
+    res.render('home', {user: req.user, posts: postsarray});
+  }
 });
 
 //displays our signup page
@@ -158,6 +214,103 @@ app.get('/logout', function(req, res){
   res.redirect('/');
   req.session.notice = "You have successfully been logged out " + name + "!";
 });
+
+//displays our submit page
+app.get('/submit', function(req, res){
+  res.render('submit', {user: req.user});
+});
+
+// app.post('/upmykarma/', function(req, res) {
+//     User.find({}, function(err, persons) {
+//         persons.forEach(function(person) {
+//             if (req.body.id == person._id) {
+//                 console.log(person.username);
+//                 person.karma++;
+//                 person.save(function(err) {
+//                   console.log("karma: " + person.karma);
+//                 });
+//             }
+//         });
+//     });
+// });
+
+app.post('/newpost/', function(req, res) {
+    User.find({}, function(err, persons) {
+        persons.forEach(function(person) {
+            if (req.body.id == person._id) {
+                console.log(person.username);
+
+                var date = new Date();
+                
+                var newPost = new Post({
+                  title: req.body.title,
+                  url: req.body.url,
+                  text: req.body.text,
+                  authorid: req.body.id,
+                  author: person.username,
+                  points: 0,
+                  date: date
+                });
+
+                newPost.save(function(err) {});
+
+                person.posts.push(newPost._id);
+
+                person.save(function(err) {
+                  console.log("posts: " + person.posts);
+                  res.json({
+                      success: true,
+                      message: "Post successful"
+                  });
+                });
+            }
+        });
+    });
+});
+
+app.post('/uppost/', function(req, res) {
+    Post.find({}, function(err, posts) {
+        posts.forEach(function(post) {
+            if (req.body.id == post._id) {
+                found = false;
+                post.voteids.forEach(function(votes) {
+                  if (votes == req.body.userid) {
+                    res.json({
+                      success: false,
+                      message: "Already upvoted"
+                    });
+                    found = true;
+                  }
+                });
+                if (!found) {
+
+                  User.find({}, function(err, users) {
+                    users.forEach(function(user) {
+                      if (post.authorid == user._id) {
+                        user.karma++;
+                        user.save(function(err) {
+
+                        });
+                      }
+                    });
+                  });
+
+                  post.points++;
+                  post.voteids.push(req.body.userid);
+                  post.save(function(err) {
+                    console.log(post.title + " points: " + post.points);
+                    res.json({
+                      success: true,
+                      message: "Upvoted"
+                    });
+                  });
+                }
+            }
+        });
+    });
+});
+
+
 
 
 //===============PORT=================
