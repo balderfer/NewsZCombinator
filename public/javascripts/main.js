@@ -56,30 +56,34 @@ function newpost(id) {
     var url = document.getElementById("url").value;
     var text = document.getElementById("text").value;
 
-    $.ajax({
-        type: 'POST',
-        data: JSON.stringify({
-            id: id,
-            title: title,
-            url: url,
-            text: text
-        }),
-        contentType: 'application/json',
-        dataType: 'json',
-        url: '/newpost/',
-        success: function(data) {
-            console.log(data.message);
-            if (!data.success) {
-                alert(data.message);
-            }
-            else {
-                window.location.replace("http://news.zcombinator.me");
-            }
-        },
-        error: function(data) {
-            console.log(data);
-        }
-    });
+    url = url.replace(/.*?:\/\//g, "");
+
+    console.log(url);
+
+    // $.ajax({
+    //     type: 'POST',
+    //     data: JSON.stringify({
+    //         id: id,
+    //         title: title,
+    //         url: url,
+    //         text: text
+    //     }),
+    //     contentType: 'application/json',
+    //     dataType: 'json',
+    //     url: '/newpost/',
+    //     success: function(data) {
+    //         console.log(data.message);
+    //         if (!data.success) {
+    //             alert(data.message);
+    //         }
+    //         else {
+    //             window.location.replace("http://news.zcombinator.me");
+    //         }
+    //     },
+    //     error: function(data) {
+    //         console.log(data);
+    //     }
+    // });
 }
 
 
