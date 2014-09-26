@@ -89,6 +89,13 @@ function newpost(id) {
 
 
 jQuery(document).ready(function($) {
+
+    $(".author").each(function(index, el) {
+        if ($(this).html().length > 10) {
+            var trimmedString = $(this).html().substring(0, 10) + "...";
+            $(this).html(trimmedString);
+        }
+    });
     
 
     // Format time
