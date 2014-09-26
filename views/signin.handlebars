@@ -17,18 +17,19 @@
     </div>
   </form>
 
-  <form id="local-reg" class="collapse" action="/local-reg" method="post">
+  <div id="local-reg">
     <div>
         <p></p>
         <label>New Username:</label>
-        <input type="text" name="username"/>
+        <input type="text" id="signupusername" name="username"/>
+        <p class="warning"></p>
     </div>
     <div>
         <label>New Password:</label>
-        <input type="password" name="password"/>
+        <input type="password" id="signuppassword" name="password"/>
     </div>
     <div>
-        <input type="submit" class="btn btn-primary btn-sm" value="Register"/>
+        <input type="submit" class="btn btn-primary btn-sm" onclick="signup()" value="Register"/>
     </div>
-  </form>
+  </div>
 </div>

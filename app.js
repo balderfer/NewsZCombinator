@@ -28,7 +28,7 @@ mongoose.connect(db_url);
 
 // mongoose.connect('localhost', 'aanews');
 
-// var db = mongoose.connection;
+var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function callback() {
     console.log('Connected to database');
@@ -74,37 +74,43 @@ passport.use('local-signin', new LocalStrategy(
 
 // Use the LocalStrategy within Passport to Register/"signup" users.
 passport.use('local-signup', new LocalStrategy(
-  {passReqToCallback : true}, //allows us to pass back the request to the callback
-  function(req, username, password, done) {
+    {passReqToCallback : true}, //allows us to pass back the request to the callback
+    function(req, username, password, done) {
+        if (username.length > 10) {
+            req.session.error = 'Username must be 10 characters or less.'; //inform user could not log them in
+            done(null);
+        }
+        else {
+            username.replace(/[^a-z0-9]/gmi, "").replace(/\s+/g, "");
+            
+            // Create MongoDB user
+            var newUser = new User({
+                username: username,
+                karma: 0
+            });
+            newUser.save();
 
-    var newUser = new User({
-      username: username,
-      karma: 0
-    });
+            console.log(newUser);
 
-    newUser.save(function(err) {
+            funct.localReg(username, password, newUser._id)
+            .then(function (user) {
+                if (user) {
 
-    });
-
-    console.log(newUser);
-
-    funct.localReg(username, password, newUser._id)
-    .then(function (user) {
-      if (user) {
-        console.log("REGISTERED: " + user.username);
-        req.session.success = 'You are successfully registered and logged in ' + user.username + '!';
-        done(null, user);
-      }
-      if (!user) {
-        console.log("COULD NOT REGISTER");
-        req.session.error = 'That username is already in use, please try a different one.'; //inform user could not log them in
-        done(null, user);
-      }
-    })
-    .fail(function (err){
-      console.log(err.body);
-    });
-  }
+                    console.log("REGISTERED: " + user.username);
+                    req.session.success = 'You are successfully registered and logged in ' + user.username + '!';
+                    done(null, user);
+                }
+                if (!user) {
+                    console.log("COULD NOT REGISTER");
+                    req.session.error = 'That username is already in use, please try a different one.'; //inform user could not log them in
+                    done(null, user);
+                }
+            })
+            .fail(function (err){
+              console.log(err.body);
+            });
+        }
+    }
 ));
 
 // Simple route middleware to ensure user is authenticated.
@@ -164,6 +170,7 @@ app.get('/', function(req, res){
 
   var postsarray = [];
 
+
   Post.find({}, function(err, posts) {
     posts.forEach(function(post) {
       postsarray.push(post);
@@ -209,7 +216,7 @@ app.post('/login', passport.authenticate('local-signin', {
 //logs user out of site, deleting them from the session, and returns to homepage
 app.get('/logout', function(req, res){
   var name = req.user.username;
-  console.log("LOGGIN OUT " + req.user.username)
+  console.log("LOGGIN OUT " + req.user.username);
   req.logout();
   res.redirect('/');
   req.session.notice = "You have successfully been logged out " + name + "!";
@@ -234,80 +241,111 @@ app.get('/submit', function(req, res){
 //     });
 // });
 
-app.post('/newpost/', function(req, res) {
-    User.find({}, function(err, persons) {
-        persons.forEach(function(person) {
-            if (req.body.id == person._id) {
-                console.log(person.username);
+app.get('/getposts', function(req, res) {
+    Post.find({}, function(err, posts) {
+        var len = posts.length;
 
-                var date = new Date();
-                
-                var newPost = new Post({
-                  title: req.body.title,
-                  url: req.body.url,
-                  text: req.body.text,
-                  authorid: req.body.id,
-                  author: person.username,
-                  points: 0,
-                  date: date
-                });
+        // posts.forEach(function(post) {
+        //     date = new Date();
+        //     var timeDiff = Math.abs(date.getTime() - post.date.getTime());
+        //     var diffMin = Math.ceil(timeDiff / (1000 * 60));
+            
+        //     console.log(post.title + ": " + post.score);
+        // });
 
-                newPost.save(function(err) {});
+        function compare(a,b) {
+            if (a.points > b.points)
+                return -1;
+            if (a.points < b.points)
+                return 1;
+            return 0;
+        }
+        posts.sort(compare);
 
-                person.posts.push(newPost._id);
-
-                person.save(function(err) {
-                  console.log("posts: " + person.posts);
-                  res.json({
-                      success: true,
-                      message: "Post successful"
-                  });
-                });
-            }
+        res.json({
+            posts: posts
         });
     });
 });
 
-app.post('/uppost/', function(req, res) {
-    Post.find({}, function(err, posts) {
-        posts.forEach(function(post) {
-            if (req.body.id == post._id) {
-                found = false;
-                post.voteids.forEach(function(votes) {
-                  if (votes == req.body.userid) {
-                    res.json({
-                      success: false,
-                      message: "Already upvoted"
+app.post('/newpost/', function(req, res) {
+    if (req.user) {
+        User.find({}, function(err, persons) {
+            persons.forEach(function(person) {
+                if (req.user.id == person._id) {
+                    console.log(person.username);
+
+                    var date = new Date();
+                    
+                    var newPost = new Post({
+                      title: req.body.title,
+                      url: req.body.url,
+                      text: req.body.text,
+                      authorid: req.user.id,
+                      author: person.username,
+                      points: 0,
+                      date: date
                     });
-                    found = true;
-                  }
-                });
-                if (!found) {
 
-                  User.find({}, function(err, users) {
-                    users.forEach(function(user) {
-                      if (post.authorid == user._id) {
-                        user.karma++;
-                        user.save(function(err) {
+                    newPost.save(function(err) {});
 
+                    person.posts.push(newPost._id);
+
+                    person.save(function(err) {
+                      console.log("posts: " + person.posts);
+                      res.json({
+                          success: true,
+                          message: "Post successful"
+                      });
+                    });
+                }
+            });
+        });
+    }
+});
+
+app.post('/uppost/', function(req, res) {
+    if (req.user) {
+        Post.find({}, function(err, posts) {
+            posts.forEach(function(post) {
+                if (req.body.id == post._id) {
+                    found = false;
+                    post.voteids.forEach(function(votes) {
+                      if (votes == req.user.id) {
+                        res.json({
+                          success: false,
+                          message: "Already upvoted"
                         });
+                        found = true;
                       }
                     });
-                  });
+                    if (!found) {
 
-                  post.points++;
-                  post.voteids.push(req.body.userid);
-                  post.save(function(err) {
-                    console.log(post.title + " points: " + post.points);
-                    res.json({
-                      success: true,
-                      message: "Upvoted"
-                    });
-                  });
+                      User.find({}, function(err, users) {
+                        users.forEach(function(user) {
+                          if (post.authorid == user._id) {
+                            user.karma++;
+                            user.save(function(err) {
+
+                            });
+                          }
+                        });
+                      });
+
+                      post.points++;
+                      post.voteids.push(req.user.id);
+                      post.save(function(err) {
+                        console.log(post.title + " points: " + post.points);
+                        res.json({
+                          success: true,
+                          message: "Upvoted"
+                        });
+                      });
+                    }
                 }
-            }
+            });
         });
-    });
+    }
 });
 
 
